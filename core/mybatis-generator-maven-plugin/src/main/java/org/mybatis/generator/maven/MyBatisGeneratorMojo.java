@@ -15,15 +15,6 @@
  */
 package org.mybatis.generator.maven;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
-
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
@@ -44,6 +35,11 @@ import org.mybatis.generator.internal.util.ClassloaderUtility;
 import org.mybatis.generator.internal.util.StringUtility;
 import org.mybatis.generator.internal.util.messages.Messages;
 import org.mybatis.generator.logging.LogFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * Goal which generates MyBatis artifacts.
@@ -143,6 +139,9 @@ public class MyBatisGeneratorMojo extends AbstractMojo {
      * If true, then dependencies in scope compile, provided, and system scopes will be
      * added to the classpath of the generator.  These dependencies will be searched for
      * JDBC drivers, root classes, root interfaces, generator plugins, etc.
+     * 如果为真，那么在scope编译、provided和系统作用域中的依赖关系将被替换为
+     * 添加到生成器的classpath中。 这些依赖关系将被搜索出来
+     * JDBC驱动程序、根类、根接口、生成器插件等。
      */
     @Parameter(property = "mybatis.generator.includeCompileDependencies", defaultValue = "false")
     private boolean includeCompileDependencies;
@@ -151,6 +150,11 @@ public class MyBatisGeneratorMojo extends AbstractMojo {
      * If true, then dependencies in all scopes will be
      * added to the classpath of the generator.  These dependencies will be searched for
      * JDBC drivers, root classes, root interfaces, generator plugins, etc.
+     *
+     *
+     * 如果为真，那么所有作用域中的依赖关系将是
+     * 添加到生成器的classpath中。 这些依赖关系将被搜索出来
+     * JDBC驱动、根类、根接口、生成器插件等。
      */
     @Parameter(property = "mybatis.generator.includeAllDependencies", defaultValue = "false")
     private boolean includeAllDependencies;
@@ -165,13 +169,13 @@ public class MyBatisGeneratorMojo extends AbstractMojo {
         saveClassLoader();
 
         LogFactory.setLogFactory(new MavenLogFactory(this));
-
+        //计算类路径
         calculateClassPath();
 
-        // add resource directories to the classpath.  This is required to support
-        // use of a properties file in the build.  Typically, the properties file
-        // is in the project's source tree, but the plugin classpath does not
-        // include the project classpath.
+        // 将资源目录添加到classpath中。 这是为支持
+        // 在构建过程中使用属性文件。 通常情况下，属性文件
+        // 在项目的源代码树中，但插件的classpath并不在其中。
+        // 包括项目classpath。
         List<Resource> resources = project.getResources();
         List<String> resourceDirectories = new ArrayList<>();
         for (Resource resource: resources) {
@@ -181,22 +185,23 @@ public class MyBatisGeneratorMojo extends AbstractMojo {
         ObjectFactory.addExternalClassLoader(cl);
 
         if (configurationFile == null) {
-            throw new MojoExecutionException(
-                    Messages.getString("RuntimeError.0")); //$NON-NLS-1$
+            //$NON-NLS-1$
+            throw new MojoExecutionException(Messages.getString("RuntimeError.0"));
         }
 
         List<String> warnings = new ArrayList<>();
 
         if (!configurationFile.exists()) {
-            throw new MojoExecutionException(Messages.getString(
-                    "RuntimeError.1", configurationFile.toString())); //$NON-NLS-1$
+            //$NON-NLS-1$
+            throw new MojoExecutionException(Messages.getString("RuntimeError.1", configurationFile.toString()));
         }
 
         runScriptIfNecessary();
 
         Set<String> fullyqualifiedTables = new HashSet<>();
         if (StringUtility.stringHasValue(tableNames)) {
-            StringTokenizer st = new StringTokenizer(tableNames, ","); //$NON-NLS-1$
+            //$NON-NLS-1$
+            StringTokenizer st = new StringTokenizer(tableNames, ",");
             while (st.hasMoreTokens()) {
                 String s = st.nextToken().trim();
                 if (s.length() > 0) {
@@ -207,7 +212,8 @@ public class MyBatisGeneratorMojo extends AbstractMojo {
 
         Set<String> contextsToRun = new HashSet<>();
         if (StringUtility.stringHasValue(contexts)) {
-            StringTokenizer st = new StringTokenizer(contexts, ","); //$NON-NLS-1$
+            //$NON-NLS-1$
+            StringTokenizer st = new StringTokenizer(contexts, ",");
             while (st.hasMoreTokens()) {
                 String s = st.nextToken().trim();
                 if (s.length() > 0) {
@@ -217,17 +223,14 @@ public class MyBatisGeneratorMojo extends AbstractMojo {
         }
 
         try {
-            ConfigurationParser cp = new ConfigurationParser(
-                    project.getProperties(), warnings);
+            ConfigurationParser cp = new ConfigurationParser(project.getProperties(), warnings);
             Configuration config = cp.parseConfiguration(configurationFile);
 
             ShellCallback callback = new MavenShellCallback(this, overwrite);
 
-            MyBatisGenerator myBatisGenerator = new MyBatisGenerator(config,
-                    callback, warnings);
+            MyBatisGenerator myBatisGenerator = new MyBatisGenerator(config,callback, warnings);
 
-            myBatisGenerator.generate(new MavenProgressCallback(getLog(),
-                    verbose), contextsToRun, fullyqualifiedTables);
+            myBatisGenerator.generate(new MavenProgressCallback(getLog(),verbose), contextsToRun, fullyqualifiedTables);
 
         } catch (XMLParserException e) {
             for (String error : e.getErrors()) {

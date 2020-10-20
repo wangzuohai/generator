@@ -26,3 +26,31 @@ Core:
     4. <tableSet> - to allow specification of common attributes for a set of
        tables
     
+====
+       版权2006-2018年，原作者或作者。
+
+       根据Apache许可证2.0版本（"许可证"）授权。
+       您不得使用此文件，除非符合许可证的规定。
+       你可以在以下地址获得许可证的副本
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+       除非适用法律要求或书面同意，否则软件
+       根据许可证分发的产品是以 "现状 "为基础分发的。
+       没有任何形式的明示或暗示的保证或条件。
+       请参阅许可证中有关权限和条件的具体语言。
+       许可证下的限制。
+====
+
+核心。
+
+  未来
+
+    1. 修改基础API，允许在以下位置指定一个连接
+       运行时，而不是需要在
+       XML配置。
+    2. Java与JavaParser合并？
+    3. 在JavaTypeResolver中增加一种覆盖默认类型的方法。
+    4. <tableSet>--允许指定一组表的共同属性。
+       桌子
+

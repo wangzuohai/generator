@@ -15,7 +15,8 @@
  */
 package org.mybatis.generator.internal.util;
 
-import static org.mybatis.generator.internal.util.messages.Messages.getString;
+import org.mybatis.generator.logging.Log;
+import org.mybatis.generator.logging.LogFactory;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -25,8 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.mybatis.generator.logging.Log;
-import org.mybatis.generator.logging.LogFactory;
+import static org.mybatis.generator.internal.util.messages.Messages.getString;
 
 /**
  * This class holds methods useful for constructing custom classloaders.
@@ -44,6 +44,11 @@ public class ClassloaderUtility {
     private ClassloaderUtility() {
     }
 
+    /**
+     * 获取自定义类加载器
+     * @param entries
+     * @return
+     */
     public static ClassLoader getCustomClassloader(Collection<String> entries) {
         List<URL> urls = new ArrayList<>();
         File file;
@@ -52,7 +57,8 @@ public class ClassloaderUtility {
             for (String classPathEntry : entries) {
                 file = new File(classPathEntry);
                 if (!file.exists()) {
-                    LOG.warn(getString("Warning.31", classPathEntry)); //$NON-NLS-1$
+                    //$NON-NLS-1$
+                    LOG.warn(getString("Warning.31", classPathEntry));
                     continue;
                 }
 
@@ -60,8 +66,9 @@ public class ClassloaderUtility {
                     urls.add(file.toURI().toURL());
                 } catch (MalformedURLException e) {
                     // this shouldn't happen, but just in case...
+                    //$NON-NLS-1$
                     throw new RuntimeException(getString(
-                            "RuntimeError.9", classPathEntry)); //$NON-NLS-1$
+                            "RuntimeError.9", classPathEntry));
                 }
             }
         }
